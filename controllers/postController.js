@@ -6,7 +6,7 @@ const Comment = require('../models/comment');
 
 exports.getAllPosts = asyncHandler(async (req, res, next) => {
   try {
-    const posts = await Post.find().populate('user');
+    const posts = await Post.find({ published: true }).populate('user');
     res.status(200).json({ posts });
   } catch (err) {
     if (err) {
