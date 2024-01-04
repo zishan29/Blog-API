@@ -6,7 +6,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
-const Cors = require('micro-cors');
+const cors = require('cors');
 
 const indexRouter = require('./routes/index');
 
@@ -17,22 +17,17 @@ mongoose.connect(mongoDb);
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'mongo connection error'));
 
-const cors = Cors({
-  allowedOrigins: [
-    'https://blog-bice-tau-13.vercel.app',
-    'http://localhost:3000',
-  ],
-  allowedMethods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-});
+const corsOptions = {
+  origin: ['https://blog-bice-tau-13.vercel.app', 'http://localhost:3000'],
+  optionsSuccessStatus: 200,
+};
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors);
+app.options('*', cors(corsOptions));
 
 app.use('/', indexRouter);
 
