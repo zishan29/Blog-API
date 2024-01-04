@@ -52,16 +52,29 @@ exports.deleteSingleComment = asyncHandler(async (req, res, next) => {
           .json({ message: `No comment with id ${req.params.commentid}` });
       }
 
+      // const deletedComment = await Post.findOneAndUpdate(
+      //   {
+      //     _id: req.params.postid,
+      //   },
+      //   {
+      //     $pull: {
+      //       comments: req.params.commentid,
+      //     },
+      //   },
+      // );
+
       const deletedComment = await Post.findOneAndUpdate(
         {
           _id: req.params.postid,
         },
         {
-          $pull: {
-            comments: req.params.commentid,
+          $pullAll: {
+            comments: [req.params.commentid],
           },
         },
+        { new: true },
       );
+
       res.status(200).json({
         message: `Deleted comment with id ${req.params.commentid} and removed from ${req.params.postid}`,
         comment,
