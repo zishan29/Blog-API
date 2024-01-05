@@ -82,48 +82,37 @@ exports.deletePost = asyncHandler(async (req, res, next) => {
   }
 });
 
-exports.createPost = [
-  body('title')
-    .trim()
-    .isLength({ min: 1 })
-    .withMessage('Add a title to your post!'),
-  body('content')
-    .trim()
-    .isLength({ min: 1 })
-    .withMessage('Add content to your blog post'),
-  asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const errorMessages = {};
-      errors.array().forEach((error) => {
-        const { param, msg } = error;
-        if (!errorMessages[param]) {
-          errorMessages[param] = [];
-        }
-        errorMessages[param].push(msg);
-      });
-
-      res.status(400).json({ errors: errorMessages });
-    }
-    try {
-      const post = new Post({
-        title: req.body.title,
-        content: req.body.content,
-        published: req.body.published,
-        user: req.user._id,
-      });
-      try {
-        await post.save();
-        res.status(200).json({ post, user: req.user });
-      } catch (err) {
-        next(err);
+exports.createPost = asyncHandler(async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorMessages = {};
+    errors.array().forEach((error) => {
+      const { param, msg } = error;
+      if (!errorMessages[param]) {
+        errorMessages[param] = [];
       }
-      await Users.findOneAndUpdate(
-        { _id: post.user },
-        { $push: { posts: post } },
-      );
-    } catch (err) {
-      res.status(400).json({ err });
-    }
-  }),
-];
+      errorMessages[param].push(msg);
+    });
+
+    return res.status(400).json({ errors: errorMessages });
+  }
+
+  try {
+    const post = new Post({
+      title: req.body.title,
+      content: req.body.content,
+      published: req.body.published,
+      user: req.user._id,
+    });
+
+    await post.save();
+    res.status(200).json({ post, user: req.user });
+
+    await Users.findOneAndUpdate(
+      { _id: post.user },
+      { $push: { posts: post } },
+    );
+  } catch (err) {
+    res.status(400).json({ err });
+  }
+});
