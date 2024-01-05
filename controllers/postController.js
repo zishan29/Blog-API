@@ -67,7 +67,7 @@ exports.deletePost = asyncHandler(async (req, res, next) => {
           .json({ err: `No posts with id ${req.params.id} exists` });
       }
       const deletedComments = await Comment.deleteMany({
-        id: req.params.id,
+        postId: req.params.id,
       });
       res.status(200).json({
         message: `Post with id ${req.params.id} deleted successfully`,
