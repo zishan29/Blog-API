@@ -6,11 +6,20 @@ const commentController = require('../controllers/commentController');
 
 const router = express.Router();
 
+const allowUnauthenticated = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer')) {
+    return next();
+  }
+  return passport.authenticate('jwt', { session: false })(req, res, next);
+};
+
 router.post('/signup', indexController.signUp);
 
 router.post('/login', indexController.login);
 
-router.get('/posts', postController.getAllPosts);
+router.get('/posts', allowUnauthenticated, postController.getAllPosts);
 
 router.get('/posts/:id', postController.getPost);
 
