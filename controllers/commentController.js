@@ -52,17 +52,6 @@ exports.deleteSingleComment = asyncHandler(async (req, res, next) => {
           .json({ message: `No comment with id ${req.params.commentid}` });
       }
 
-      // const deletedComment = await Post.findOneAndUpdate(
-      //   {
-      //     _id: req.params.postid,
-      //   },
-      //   {
-      //     $pull: {
-      //       comments: req.params.commentid,
-      //     },
-      //   },
-      // );
-
       const deletedComment = await Post.findOneAndUpdate(
         {
           _id: req.params.postid,
@@ -89,55 +78,40 @@ exports.deleteSingleComment = asyncHandler(async (req, res, next) => {
   }
 });
 
-exports.createComment = [
-  body('comment')
-    .trim()
-    .isLength({ min: 1 })
-    .withMessage('You have left an empty comment'),
-  body('username')
-    .trim()
-    .isLength({ min: 1 })
-    .withMessage('Username must not be empty'),
-  body('email')
-    .trim()
-    .isLength({ min: 1 })
-    .withMessage('Email is required to post a comment'),
-
-  asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      const errorMessages = {};
-      errors.array().forEach((error) => {
-        const { param, msg } = error;
-        if (!errorMessages[param]) {
-          errorMessages[param] = [];
-        }
-        errorMessages[param].push(msg);
-      });
-
-      res.status(400).json({ errors: errorMessages });
-    }
-    try {
-      const comment = new Comment({
-        username: req.body.username,
-        email: req.body.email,
-        comment: req.body.comment,
-        postId: req.params.id,
-      });
-      try {
-        await comment.save();
-        res.status(200).json({ message: 'Comment saved', comment });
-      } catch (err) {
-        if (err) {
-          res.status(400).json({ err });
-        }
+exports.createComment = asyncHandler(async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorMessages = {};
+    errors.array().forEach((error) => {
+      const { param, msg } = error;
+      if (!errorMessages[param]) {
+        errorMessages[param] = [];
       }
-      await Post.findOneAndUpdate(
-        { _id: req.params.id },
-        { $push: { comments: comment } },
-      );
+      errorMessages[param].push(msg);
+    });
+
+    res.status(400).json({ errors: errorMessages });
+  }
+  try {
+    const comment = new Comment({
+      username: req.body.username,
+      email: req.body.email,
+      comment: req.body.comment,
+      postId: req.params.id,
+    });
+    try {
+      await comment.save();
+      res.status(200).json({ message: 'Comment saved', comment });
     } catch (err) {
-      res.status(400).json({ err });
+      if (err) {
+        res.status(400).json({ err });
+      }
     }
-  }),
-];
+    await Post.findOneAndUpdate(
+      { _id: req.params.id },
+      { $push: { comments: comment } },
+    );
+  } catch (err) {
+    res.status(400).json({ err });
+  }
+});
