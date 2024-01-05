@@ -90,8 +90,9 @@ exports.createComment = asyncHandler(async (req, res, next) => {
       errorMessages[param].push(msg);
     });
 
-    res.status(400).json({ errors: errorMessages });
+    return res.status(400).json({ errors: errorMessages });
   }
+
   try {
     const comment = new Comment({
       username: req.body.username,
@@ -99,19 +100,16 @@ exports.createComment = asyncHandler(async (req, res, next) => {
       comment: req.body.comment,
       postId: req.params.id,
     });
-    try {
-      await comment.save();
-      res.status(200).json({ message: 'Comment saved', comment });
-    } catch (err) {
-      if (err) {
-        res.status(400).json({ err });
-      }
-    }
+
+    await comment.save();
+
     await Post.findOneAndUpdate(
       { _id: req.params.id },
-      { $push: { comments: comment } },
+      { $push: { comments: comment._id } }, // Push the comment's _id instead of the whole comment object
     );
+
+    return res.status(200).json({ message: 'Comment saved', comment });
   } catch (err) {
-    res.status(400).json({ err });
+    return res.status(400).json({ err });
   }
 });
