@@ -21,7 +21,7 @@ const corsOptions = {
   origin: [
     'https://blog-bice-tau-13.vercel.app',
     'http://localhost:3000',
-    'https://blog-cms-puce.vercel.app/',
+    'https://blog-cms-puce.vercel.app',
   ],
   optionsSuccessStatus: 200,
 };
