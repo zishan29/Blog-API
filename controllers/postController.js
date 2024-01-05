@@ -109,6 +109,7 @@ exports.createPost = [
       const post = new Post({
         title: req.body.title,
         content: req.body.content,
+        published: req.body.published,
         user: req.user._id,
       });
       try {
