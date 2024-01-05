@@ -37,6 +37,7 @@ exports.updatePost = asyncHandler(async (req, res, next) => {
       const post = await Post.findByIdAndUpdate(req.params.id, {
         title: req.body.title,
         content: req.body.content,
+        published: req.body.published,
         _id: req.params.id,
       });
       if (!post) {
